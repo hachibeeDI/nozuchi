@@ -1,4 +1,4 @@
-import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/shim/with-selector';
+import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
 
 function shallowCompareArray<T>(x: ReadonlyArray<T>, y: ReadonlyArray<T>) {
   if (x.length !== y.length) {
