@@ -1,10 +1,12 @@
 {
   "name": "nozuchi",
+  "type": "module",
   "version": "0.0.1",
   "description": "super easy state management system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "build": "tsc"
   },
   "keywords": [
     "state",
@@ -12,8 +14,16 @@
   ],
   "author": "OGURA Daiki",
   "license": "ISC",
-  "devDependencies": {
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "dependencies": {
     "react": "^18.0.0",
+    "use-sync-external-store": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.1",
+    "typescript": "^4.6.3",
     "vitest": "^0.9.3"
   }
 }
