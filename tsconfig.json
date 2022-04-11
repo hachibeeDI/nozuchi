@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "declaration": true,
+    "jsx": "preserve",
+
+    "strict": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true,
+    "exactOptionalPropertyTypes": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": false,
+
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noErrorTruncation": true,
+
+    "lib": ["dom", "esnext"],
+    "types": ["react/next"],
+
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["./src/**/*"],
+}
