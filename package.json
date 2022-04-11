@@ -1,0 +1,19 @@
+{
+  "name": "nozuchi",
+  "version": "0.0.1",
+  "description": "super easy state management system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "state",
+    "react"
+  ],
+  "author": "OGURA Daiki",
+  "license": "ISC",
+  "devDependencies": {
+    "react": "^18.0.0",
+    "vitest": "^0.9.3"
+  }
+}
