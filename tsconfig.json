@@ -4,6 +4,9 @@
     "module": "esnext",
     "declaration": true,
     "jsx": "preserve",
+    "moduleResolution": "node",
+    // TODO: skip while vitest is broken
+    "skipLibCheck": true,
 
     "strict": true,
 
@@ -20,14 +23,14 @@
 
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
     "noErrorTruncation": true,
 
     "lib": ["dom", "esnext"],
+    // TODO: node is for vitest... I should isolate it probably?
     "types": ["react/next"],
 
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": ["./src/**/*"],
+  "files": ["./src/index.ts"]
 }
