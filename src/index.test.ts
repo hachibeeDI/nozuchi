@@ -18,5 +18,3 @@ test('Store is subscribable', () => {
 
   expect(confirmAWasChanged).toBeCalledTimes(1);
 });
-
-// TODO: test with react emulator
