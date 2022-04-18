@@ -73,11 +73,11 @@ type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
 type BehaviorReturn<State> = (s: State) => State | ((s: State) => Promise<State>);
 type Behavior<State, Args extends ReadonlyArray<any>> = (...args: Args) => BehaviorReturn<State>;
 
-export type Subscriber<State, Behaviors extends Record<string, Behavior<State, any>>> = {
-  subscribe: (sub: (state: State) => void) => () => void;
-  useSelector: <Selection>(selector: (s: State) => Selection, isEqual?: (a: Selection, b: Selection) => boolean) => Selection;
-  getState(): State;
-  setState: Setter<State>;
+export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly<State>, any>>> = {
+  subscribe: (sub: (state: Readonly<State>) => void) => void;
+  useSelector: <Selection>(selector: (s: Readonly<State>) => Selection, isEqual?: (a: Selection, b: Selection) => boolean) => Selection;
+  getState(): Readonly<State>;
+  setState: Setter<Readonly<State>>;
   actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => void};
 };
 
@@ -125,3 +125,4 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
     setState,
   };
 }
+
