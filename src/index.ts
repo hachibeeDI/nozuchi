@@ -125,4 +125,3 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
     setState,
   };
 }
-

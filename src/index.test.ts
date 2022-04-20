@@ -1,6 +1,6 @@
 import {test, expect, vi} from 'vitest';
 
-import {createStore} from './index'; 
+import {createStore} from './index';
 
 test('Store is subscribable', () => {
   const initialState = {a: 'a', b: 'b'};

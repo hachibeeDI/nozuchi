@@ -1,7 +1,7 @@
+import {render, screen, fireEvent} from '@testing-library/react';
 import React from 'react';
 
 import {test, expect} from 'vitest';
-import {render, screen, fireEvent} from '@testing-library/react';
 
 import {createStore} from './index'; 
 
@@ -23,6 +23,7 @@ test('Selector was memoized', () => {
     bCalled = bCalled + 1;
     return <div>{selectedA}</div>;
   };
+
   const Top = () => {
     return (
       <div>
