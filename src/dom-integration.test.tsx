@@ -13,7 +13,7 @@ const store = createStore(initialState, {
 test('Selector was memoized', () => {
   let aCalled = 0;
   const ARefComponent = () => {
-    const selectedCount = store.useSelector(s => s.count);
+    const [selectedCount] = store.useSelector(s => [s.count]);
     aCalled = aCalled + 1;
     return <div data-testid="a">count = {selectedCount}</div>;
   };

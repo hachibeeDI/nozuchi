@@ -1,6 +1,6 @@
-import {test, expect, vi} from 'vitest';
+import {describe, test, expect, vi} from 'vitest';
 
-import {createStore} from './index';
+import {createStore, shallowCompare} from './index';
 
 test('Store is subscribable', () => {
   const initialState = {a: 'a', b: 'b'};
@@ -18,3 +18,36 @@ test('Store is subscribable', () => {
 
   expect(confirmAWasChanged).toBeCalledTimes(1);
 });
+
+
+describe('shallowCompare', () => {
+  test('shallowCompare is work fine', () => {
+    expect(shallowCompare('abc', 'abc')).toBe(true);
+    expect(shallowCompare(123, 123)).toBe(true);
+    expect(shallowCompare(null, null)).toBe(true);
+    expect(shallowCompare(undefined, undefined)).toBe(true);
+    expect(shallowCompare(null, undefined)).toBe(false);
+    expect(shallowCompare(NaN, NaN)).toBe(true);
+
+    expect(shallowCompare([
+      'a',
+      'b',
+      'c',
+     ], [
+      'a',
+      'b',
+      'c',
+     ])).toBe(true);
+    expect(shallowCompare({
+      a: 'a',
+      b: 'b',
+      c: 'c',
+      d: [123, 4],
+    }, {
+      a: 'a',
+      b: 'b',
+      c: 'c',
+      d: [123, 4],
+    })).toBe(true);
+  });
+})

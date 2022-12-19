@@ -14,7 +14,8 @@ function isPrimitive(x: unknown) {
   return primitiveHead.test(typeof x);
 }
 
-function shallowCompare<T>(x: T, y: T) {
+/** export for test suite */
+export function shallowCompare<T>(x: T, y: T) {
   if (Object.is(x, y)) {
     return true;
   }
@@ -33,8 +34,16 @@ function shallowCompare<T>(x: T, y: T) {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return xKeys.every((k) => (x as any)[k] === (y as any)[k]);
+  return xKeys.every((k) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const xc = (x as any)[k];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const yc = (y as any)[k];
+    if (Array.isArray(xc) && Array.isArray(yc)) {
+      return shallowCompareArray(xc, yc);
+    }
+    return Object.is(xc, yc);
+  });
 }
 
 const CACHED_UPDATE_EVENT = new Event('update');
