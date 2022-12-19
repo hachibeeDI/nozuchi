@@ -19,7 +19,6 @@ test('Store is subscribable', () => {
   expect(confirmAWasChanged).toBeCalledTimes(1);
 });
 
-
 describe('shallowCompare', () => {
   test('shallowCompare is work fine', () => {
     expect(shallowCompare('abc', 'abc')).toBe(true);
@@ -29,25 +28,22 @@ describe('shallowCompare', () => {
     expect(shallowCompare(null, undefined)).toBe(false);
     expect(shallowCompare(NaN, NaN)).toBe(true);
 
-    expect(shallowCompare([
-      'a',
-      'b',
-      'c',
-     ], [
-      'a',
-      'b',
-      'c',
-     ])).toBe(true);
-    expect(shallowCompare({
-      a: 'a',
-      b: 'b',
-      c: 'c',
-      d: [123, 4],
-    }, {
-      a: 'a',
-      b: 'b',
-      c: 'c',
-      d: [123, 4],
-    })).toBe(true);
+    expect(shallowCompare(['a', 'b', 'c'], ['a', 'b', 'c'])).toBe(true);
+    expect(
+      shallowCompare(
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+          d: [123, 4],
+        },
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+          d: [123, 4],
+        },
+      ),
+    ).toBe(true);
   });
-})
+});

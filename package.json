@@ -1,6 +1,6 @@
 {
   "name": "nozuchi",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "super easy state management system",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
