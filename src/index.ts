@@ -14,7 +14,8 @@ function isPrimitive(x: unknown) {
   return primitiveHead.test(typeof x);
 }
 
-function shallowCompare<T>(x: T, y: T) {
+/** export for test suite */
+export function shallowCompare<T>(x: T, y: T) {
   if (Object.is(x, y)) {
     return true;
   }
@@ -27,14 +28,22 @@ function shallowCompare<T>(x: T, y: T) {
   }
 
   const xKeys = Object.keys(x);
-  const yKeys = Object.keys(y);
+  const yKeys = y == null ? [] : Object.keys(y);
   const keyDiff = shallowCompareArray(xKeys, yKeys);
   if (keyDiff === false) {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return xKeys.every((k) => (x as any)[k] === (y as any)[k]);
+  return xKeys.every((k) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const xc = (x as any)[k];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const yc = (y as any)[k];
+    if (Array.isArray(xc) && Array.isArray(yc)) {
+      return shallowCompareArray(xc, yc);
+    }
+    return Object.is(xc, yc);
+  });
 }
 
 const CACHED_UPDATE_EVENT = new Event('update');
@@ -70,7 +79,7 @@ export class Subscribable<State> {
 type Updater<State> = (prev: State) => State;
 type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
 
-type BehaviorReturn<State> = (s: State) => State | ((s: State) => Promise<State>);
+type BehaviorReturn<State> = ((s: State) => State) | ((s: State) => Promise<State>);
 type Behavior<State, Args extends ReadonlyArray<any>> = (...args: Args) => BehaviorReturn<State>;
 
 export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly<State>, any>>> = {
@@ -110,12 +119,16 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
         if (name in target === false) {
           throw new TypeError(`method ${name.toString()} is not defined in store`);
         }
-        const method: (...a: ReadonlyArray<any>) => any = target[name as string] as any;
+        const method: (...a: ReadonlyArray<any>) => BehaviorReturn<State> = target[name as string] as any;
         return (...args: ReadonlyArray<any>) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          const updater: (s: State) => State = method(...args);
+          const updater = method(...args);
           const nextState = updater(sub.getState());
-          sub.update(nextState);
+          if (nextState instanceof Promise) {
+            void nextState.then((s) => sub.update(s));
+          } else {
+            sub.update(nextState);
+          }
           return nextState;
         };
       },
