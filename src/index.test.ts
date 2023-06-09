@@ -2,21 +2,44 @@ import {describe, test, expect, vi} from 'vitest';
 
 import {createStore, shallowCompare} from './index';
 
-test('Store is subscribable', () => {
-  const initialState = {a: 'a', b: 'b'};
-  const store = createStore(initialState, {
-    handleAChanged: (newA: string) => (s) => ({...s, a: newA}),
+describe('Store', () => {
+  test('is subscribable', () => {
+    const initialState = {a: 'a', b: 'b'};
+    const store = createStore(initialState, {
+      handleAChanged: (newA: string) => (s) => ({...s, a: newA}),
+    });
+
+    const confirmAWasChanged = vi.fn((s: typeof initialState) => {
+      expect(s.a).toBe('newA');
+    });
+
+    store.subscribe(confirmAWasChanged);
+
+    store.actions.handleAChanged('newA');
+
+    expect(confirmAWasChanged).toBeCalledTimes(1);
   });
 
-  const confirmAWasChanged = vi.fn((s: typeof initialState) => {
-    expect(s.a).toBe('newA');
+  test('is subscribable with async method', () => {
+    const initialState = {a: 'a', b: 'b'};
+    const store = createStore(initialState, {
+      handleAChangedAsync: (newA: string) => async (prev) =>
+        await new Promise((resolve) => {
+          setTimeout(() => resolve({...prev, a: newA}), 1);
+        }),
+    });
+
+    return new Promise((resolve) => {
+      const confirmAWasChanged = vi.fn((s: typeof initialState) => {
+        expect(s.a).toBe('newA async');
+        resolve();
+      });
+
+      store.subscribe(confirmAWasChanged);
+
+      store.actions.handleAChangedAsync('newA async');
+    });
   });
-
-  store.subscribe(confirmAWasChanged);
-
-  store.actions.handleAChanged('newA');
-
-  expect(confirmAWasChanged).toBeCalledTimes(1);
 });
 
 describe('shallowCompare', () => {

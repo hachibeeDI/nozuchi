@@ -79,7 +79,7 @@ export class Subscribable<State> {
 type Updater<State> = (prev: State) => State;
 type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
 
-type BehaviorReturn<State> = (s: State) => State | ((s: State) => Promise<State>);
+type BehaviorReturn<State> = ((s: State) => State) | ((s: State) => Promise<State>);
 type Behavior<State, Args extends ReadonlyArray<any>> = (...args: Args) => BehaviorReturn<State>;
 
 export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly<State>, any>>> = {
@@ -119,12 +119,16 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
         if (name in target === false) {
           throw new TypeError(`method ${name.toString()} is not defined in store`);
         }
-        const method: (...a: ReadonlyArray<any>) => any = target[name as string] as any;
+        const method: (...a: ReadonlyArray<any>) => BehaviorReturn<State> = target[name as string] as any;
         return (...args: ReadonlyArray<any>) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          const updater: (s: State) => State = method(...args);
+          const updater = method(...args);
           const nextState = updater(sub.getState());
-          sub.update(nextState);
+          if (nextState instanceof Promise) {
+            void nextState.then((s) => sub.update(s));
+          } else {
+            sub.update(nextState);
+          }
           return nextState;
         };
       },

@@ -22,7 +22,6 @@ module.exports = {
     curly: 'error',
     eqeqeq: ['error', 'smart'],
 
-    'no-return-await': 'error',
     'require-await': 'error',
     'no-await-in-loop': 'error',
 
