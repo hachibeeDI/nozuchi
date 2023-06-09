@@ -28,7 +28,7 @@ export function shallowCompare<T>(x: T, y: T) {
   }
 
   const xKeys = Object.keys(x);
-  const yKeys = Object.keys(y);
+  const yKeys = y == null ? [] : Object.keys(y);
   const keyDiff = shallowCompareArray(xKeys, yKeys);
   if (keyDiff === false) {
     return false;

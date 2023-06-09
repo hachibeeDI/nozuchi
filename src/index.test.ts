@@ -32,7 +32,7 @@ describe('Store', () => {
     return new Promise((resolve) => {
       const confirmAWasChanged = vi.fn((s: typeof initialState) => {
         expect(s.a).toBe('newA async');
-        resolve();
+        resolve(undefined);
       });
 
       store.subscribe(confirmAWasChanged);
