@@ -46,6 +46,11 @@ export function shallowCompare<T>(x: T, y: T) {
   });
 }
 
+export type Middleware<State> = {
+  onInit?: (s: State) => State;
+  onUpdate?: (newState: State, prevState: State) => State;
+};
+
 const CACHED_UPDATE_EVENT = new Event('update');
 
 export class Subscribable<State> {
@@ -57,8 +62,11 @@ export class Subscribable<State> {
     return this.state;
   };
 
-  constructor(initialState: State) {
-    this.state = initialState;
+  constructor(
+    initialState: State,
+    private readonly eventHook?: Middleware<State>,
+  ) {
+    this.state = eventHook?.onInit?.call(null, initialState) ?? initialState;
   }
 
   public subscribe = (sub: (state: State) => void) => {
@@ -70,7 +78,8 @@ export class Subscribable<State> {
   };
 
   public update = (newState: State) => {
-    this.state = newState;
+    const newState_ = this.eventHook?.onUpdate?.call(null, newState, this.state) ?? newState;
+    this.state = newState_;
     this.evt.dispatchEvent(CACHED_UPDATE_EVENT);
     return this.state;
   };
@@ -93,8 +102,9 @@ export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly
 export function createStore<State, Behaviors extends Record<string, Behavior<State, any>>>(
   initialState: State,
   behaviors: Behaviors,
+  middleware?: Middleware<State>,
 ): Subscriber<State, Behaviors> {
-  const sub = new Subscribable(initialState);
+  const sub = new Subscribable(initialState, middleware);
 
   const setState: Setter<State> = (sOrUpdate: State | Updater<State>) => {
     if (typeof sOrUpdate === 'function') {
