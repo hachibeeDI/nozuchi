@@ -1,9 +1,10 @@
 import {render, screen, fireEvent} from '@testing-library/react';
+
 import React from 'react';
 
 import {test, expect} from 'vitest';
 
-import {createStore} from './index'; 
+import {createStore} from './index';
 
 const initialState = {count: 0, b: 'b'};
 const store = createStore(initialState, {
