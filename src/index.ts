@@ -35,9 +35,7 @@ export function shallowCompare<T>(x: T, y: T) {
   }
 
   return xKeys.every((k) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const xc = (x as any)[k];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const yc = (y as any)[k];
     if (Array.isArray(xc) && Array.isArray(yc)) {
       return shallowCompareArray(xc, yc);
@@ -131,7 +129,6 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
         }
         const method: (...a: ReadonlyArray<any>) => BehaviorReturn<State> = target[name as string] as any;
         return (...args: ReadonlyArray<any>) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           const updater = method(...args);
           const nextState = updater(sub.getState());
           if (nextState instanceof Promise) {
