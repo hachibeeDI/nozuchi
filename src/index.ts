@@ -1,12 +1,13 @@
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
 
-import {Subscribable, Middleware} from './subscribable';
+import {Subscribable, type Middleware} from './subscribable';
 import {shallowCompare} from './helpers';
+import {Observable} from './observable';
 
 type Updater<State> = (prev: State) => State;
 type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
 
-type BehaviorReturn<State> = ((s: State) => State) | ((s: State) => Promise<State>);
+type BehaviorReturn<State> = ((s: State) => State) | ((s: State) => Promise<State>) | ((s: State) => Observable<(current: State) => State>);
 type Behavior<State, Args extends ReadonlyArray<any>> = (...args: Args) => BehaviorReturn<State>;
 
 export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly<State>, any>>> = {
@@ -53,6 +54,15 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
           const nextState = updater(sub.getState());
           if (nextState instanceof Promise) {
             void nextState.then((s) => sub.update(s));
+          } else if (nextState instanceof Observable) {
+            const unsub = nextState.subscribe({
+              next: (updater) => {
+                sub.update(updater(sub.getState()));
+              },
+              // TODO: hmm... should handle error?
+              // error: (err) => {????}
+              complete: () => unsub(),
+            });
           } else {
             sub.update(nextState);
           }

@@ -2,6 +2,9 @@ import {describe, test, expect, vi} from 'vitest';
 
 import {createStore} from './index';
 import {shallowCompare} from './helpers';
+import {Observable} from './observable';
+
+const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time)); //timeはミリ秒
 
 describe('Store', () => {
   test('is subscribable', () => {
@@ -24,10 +27,10 @@ describe('Store', () => {
   test('is subscribable with async method', () => {
     const initialState = {a: 'a', b: 'b'};
     const store = createStore(initialState, {
-      handleAChangedAsync: (newA: string) => async (prev) =>
-        await new Promise((resolve) => {
-          setTimeout(() => resolve({...prev, a: newA}), 1);
-        }),
+      handleAChangedAsync: (newA: string) => async (prev) => {
+        await sleep(1);
+        return {...prev, a: newA};
+      },
     });
 
     return new Promise((resolve) => {
@@ -40,6 +43,53 @@ describe('Store', () => {
 
       store.actions.handleAChangedAsync('newA async');
     });
+  });
+
+  test('is subscribable with observable method', async () => {
+    const initialState = {a: 'a', b: 'b'};
+    type TestState = typeof initialState;
+    const store = createStore(initialState, {
+      handleAChangedStream: (watcher: () => void) => (_prev) =>
+        new Observable<(s: TestState) => TestState>(async (obs) => {
+          await sleep(1);
+          obs.next((current) => ({...current, a: `${current.a}-${initialState.a}`}));
+          await sleep(1);
+          obs.next((current) => ({...current, a: `${current.a}-${initialState.a}`}));
+          await sleep(1);
+          obs.next((current) => ({...current, a: `${current.a}-${initialState.a}`}));
+          await sleep(1);
+          obs.complete();
+          watcher();
+        }),
+    });
+
+    let called = 0;
+    const confirmAWasChanged = vi.fn((s: typeof initialState) => {
+      switch (called) {
+        case 0:
+          expect(s.a).toBe('a-a');
+          break;
+        case 1:
+          expect(s.a).toBe('a-a-a');
+          break;
+        case 2:
+          expect(s.a).toBe('a-a-a-a');
+          break;
+        default:
+          throw new Error('test failure');
+      }
+      called = called + 1;
+    });
+
+    store.subscribe(confirmAWasChanged);
+
+    // wait until complete called
+    await new Promise((resolve) => {
+      store.actions.handleAChangedStream(() => {
+        resolve(null);
+      });
+    });
+    expect(called).toBe(3);
   });
 
   test('can handle event by middleware', () => {

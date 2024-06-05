@@ -54,7 +54,6 @@ export class Observable<V> {
 
   public subscribe = (observer: {next: (v: V) => void; error?: (err: any) => void; complete?: () => void}) => {
     const innerUpdateSub = () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       observer.next(this.stateCache!);
     };
     this.evt.addEventListener(UPDATE_EVENT_TYPE, innerUpdateSub);
