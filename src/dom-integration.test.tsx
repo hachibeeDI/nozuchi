@@ -1,4 +1,6 @@
-import {render, screen, fireEvent} from '@testing-library/react';
+import {screen} from '@testing-library/dom';
+import {render} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import React from 'react';
 
@@ -11,7 +13,7 @@ const store = createStore(initialState, {
   handleAClicked: () => (prev) => ({...prev, count: prev.count + 1}),
 });
 
-test('Selector was memoized', () => {
+test('Selector was memoized', async () => {
   let aCalled = 0;
   const ARefComponent = () => {
     const [selectedCount] = store.useSelector((s) => [s.count]);
@@ -37,14 +39,14 @@ test('Selector was memoized', () => {
 
   render(<Top />);
 
-  fireEvent.click(screen.getByRole('button'));
+  await userEvent.click(screen.getByRole('button'));
 
   expect(aCalled).toBe(2);
   expect(bCalled).toBe(1);
 
   expect(screen.getByTestId('a').textContent).toBe('count = 1');
 
-  fireEvent.click(screen.getByRole('button'));
+  await userEvent.click(screen.getByRole('button'));
 
   expect(aCalled).toBe(3);
   expect(bCalled).toBe(1);
