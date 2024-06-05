@@ -1,0 +1,38 @@
+const CACHED_UPDATE_EVENT = new Event('update');
+
+export type Middleware<State> = {
+  onInit?: (s: State) => State;
+  onUpdate?: (newState: State, prevState: State) => State;
+};
+
+export class Subscribable<State> {
+  private readonly evt = new EventTarget();
+
+  private state: State;
+
+  public getState = () => {
+    return this.state;
+  };
+
+  constructor(
+    initialState: State,
+    private readonly eventHook?: Middleware<State>,
+  ) {
+    this.state = eventHook?.onInit?.call(null, initialState) ?? initialState;
+  }
+
+  public subscribe = (sub: (state: State) => void) => {
+    const innerSub = () => {
+      sub(this.state);
+    };
+    this.evt.addEventListener('update', innerSub);
+    return () => this.evt.removeEventListener('update', innerSub);
+  };
+
+  public update = (newState: State) => {
+    const newState_ = this.eventHook?.onUpdate?.call(null, newState, this.state) ?? newState;
+    this.state = newState_;
+    this.evt.dispatchEvent(CACHED_UPDATE_EVENT);
+    return this.state;
+  };
+}
