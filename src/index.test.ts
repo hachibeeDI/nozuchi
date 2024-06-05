@@ -1,6 +1,7 @@
 import {describe, test, expect, vi} from 'vitest';
 
-import {createStore, shallowCompare} from './index';
+import {createStore} from './index';
+import {shallowCompare} from './helpers';
 
 describe('Store', () => {
   test('is subscribable', () => {
