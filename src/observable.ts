@@ -2,9 +2,10 @@ const UPDATE_EVENT_TYPE = 'update' as const;
 const ERROR_EVENT_TYPE = 'error' as const;
 const COMPLETE_EVENT_TYPE = 'complete' as const;
 
-const CACHED_UPDATE_EVENT = new Event(UPDATE_EVENT_TYPE);
-const CACHED_ERROR_EVENT = new Event(ERROR_EVENT_TYPE);
-const CACHED_COMPLETE_EVENT = new Event(COMPLETE_EVENT_TYPE);
+// Yes, Event can't be cached.
+// const CACHED_UPDATE_EVENT = new Event(UPDATE_EVENT_TYPE);
+// const CACHED_ERROR_EVENT = new Event(ERROR_EVENT_TYPE);
+// const CACHED_COMPLETE_EVENT = new Event(COMPLETE_EVENT_TYPE);
 
 export class ObservableCompletedError extends Error {}
 
@@ -33,16 +34,16 @@ export class Observable<V> {
           throw new ObservableCompletedError('This Observable has been completed.');
         }
         this.stateCache = v;
-        this.evt.dispatchEvent(CACHED_UPDATE_EVENT);
+        this.evt.dispatchEvent(new Event(UPDATE_EVENT_TYPE));
       },
 
       error: (err: any) => {
         this.errorCache = err;
-        this.evt.dispatchEvent(CACHED_ERROR_EVENT);
+        this.evt.dispatchEvent(new Event(ERROR_EVENT_TYPE));
       },
 
       complete: () => {
-        this.evt.dispatchEvent(CACHED_COMPLETE_EVENT);
+        this.evt.dispatchEvent(new Event(COMPLETE_EVENT_TYPE));
       },
     });
   }
