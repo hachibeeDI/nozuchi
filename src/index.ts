@@ -1,8 +1,10 @@
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
 
-import {Subscribable, type Middleware} from './subscribable';
+import {Subscribable, Middleware} from './subscribable';
 import {shallowCompare} from './helpers';
 import {Observable} from './observable';
+
+export {Observable, Subscribable, Middleware};
 
 type Updater<State> = (prev: State) => State;
 type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
