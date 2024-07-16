@@ -1,10 +1,11 @@
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
 
-import {Subscribable, Middleware} from './subscribable';
+import type {FSA} from './subscribable';
+import {Subscribable, Middleware, DefaultActions} from './subscribable';
 import {shallowCompare} from './helpers';
 import {Observable} from './observable';
 
-export {Observable, Subscribable, Middleware};
+export {Observable, Subscribable, Middleware, DefaultActions};
 
 type Updater<State> = (prev: State) => State;
 type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
@@ -17,14 +18,16 @@ export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly
   useSelector: <Selection>(selector: (s: Readonly<State>) => Selection, isEqual?: (a: Selection, b: Selection) => boolean) => Selection;
   getState(): Readonly<State>;
   setState: Setter<Readonly<State>>;
+  /** Redux style respect */
+  dispatch: <Action extends FSA<string, any>>(action: Action) => void;
   actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => void};
 };
 
-export function createStore<State, Behaviors extends Record<string, Behavior<State, any>>>(
-  initialState: State,
-  behaviors: Behaviors,
-  middleware?: Middleware<State>,
-): Subscriber<State, Behaviors> {
+export function createStore<
+  State,
+  Behaviors extends Record<string, Behavior<State, any>>,
+  Actions extends FSA<string, any> = DefaultActions,
+>(initialState: State, behaviors: Behaviors, middleware?: Middleware<State, Actions>): Subscriber<State, Behaviors> {
   const sub = new Subscribable(initialState, middleware);
 
   const setState: Setter<State> = (sOrUpdate: State | Updater<State>) => {
@@ -40,6 +43,10 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
     subscribe: sub.subscribe,
     useSelector: <Selection>(selector: (s: State) => Selection, isEqual: (a: Selection, b: Selection) => boolean = shallowCompare) => {
       return useSyncExternalStoreWithSelector(sub.subscribe, sub.getState, sub.getState, selector, isEqual);
+    },
+    dispatch: (act) => {
+      // You can pass any typed action if its supports FSA
+      return sub.receive(act as any);
     },
     actions: new Proxy(behaviors, {
       /**

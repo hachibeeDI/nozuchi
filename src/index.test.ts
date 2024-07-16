@@ -3,6 +3,8 @@ import {describe, test, expect, vi} from 'vitest';
 import {createStore} from './index';
 import {shallowCompare} from './helpers';
 import {Observable} from './observable';
+import type {InferActions} from './subscribable';
+import {createActionType} from './subscribable';
 
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time)); //timeはミリ秒
 
@@ -108,6 +110,35 @@ describe('Store', () => {
 
     store.actions.handleChange('newA', 'newB');
     expect(store.getState()).toStrictEqual({a: 'a!!!->newA', b: 'b!->newB'});
+  });
+
+  test('can handle action dispatcher', () => {
+    const actionA = createActionType<string>('change-a');
+    const actionB = createActionType<string>('change-b');
+    type Act = InferActions<typeof actionA | typeof actionB>;
+
+    const initialState = {a: 'a', b: 'b'};
+    const store = createStore(
+      initialState,
+      {},
+      {
+        onReceive(state, action: Act) {
+          if (actionA.match(action)) {
+            return {...state, a: action.payload};
+          } else if (actionB.match(action)) {
+            return {...state, b: action.payload};
+          }
+          return;
+        },
+      },
+    );
+    expect(store.getState()).toStrictEqual(initialState);
+
+    store.dispatch(actionA.create('newA'));
+    expect(store.getState()).toStrictEqual({a: 'newA', b: 'b'});
+
+    store.dispatch(actionB.create('newB'));
+    expect(store.getState()).toStrictEqual({a: 'newA', b: 'newB'});
   });
 });
 
