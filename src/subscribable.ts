@@ -10,7 +10,7 @@ export class Subscribable<State> {
 
   private state: State;
 
-  public getState = () => {
+  public getState = (): State => {
     return this.state;
   };
 
@@ -21,7 +21,11 @@ export class Subscribable<State> {
     this.state = eventHook?.onInit?.call(null, initialState) ?? initialState;
   }
 
-  public subscribe = (sub: (state: State) => void) => {
+  /**
+   * @param sub
+   * @returns unsubscribe
+   */
+  public subscribe = (sub: (state: State) => void): VoidFunction => {
     const innerSub = () => {
       sub(this.state);
     };
@@ -29,7 +33,7 @@ export class Subscribable<State> {
     return () => this.evt.removeEventListener('update', innerSub);
   };
 
-  public update = (newState: State) => {
+  public update = (newState: State): State => {
     const newState_ = this.eventHook?.onUpdate?.call(null, newState, this.state) ?? newState;
     this.state = newState_;
     this.evt.dispatchEvent(CACHED_UPDATE_EVENT);

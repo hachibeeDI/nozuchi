@@ -1,4 +1,4 @@
-function shallowCompareArray<T>(x: ReadonlyArray<T>, y: ReadonlyArray<T>) {
+function shallowCompareArray<T>(x: ReadonlyArray<T>, y: ReadonlyArray<T>): boolean {
   if (x.length !== y.length) {
     return false;
   }
@@ -8,12 +8,12 @@ function shallowCompareArray<T>(x: ReadonlyArray<T>, y: ReadonlyArray<T>) {
 // string or number of boolean
 const primitiveHead = new RegExp('^[s|n|b]');
 
-function isPrimitive(x: unknown) {
+function isPrimitive(x: unknown): boolean {
   return primitiveHead.test(typeof x);
 }
 
 /** export for test suite */
-export function shallowCompare<T>(x: T, y: T) {
+export function shallowCompare<T>(x: T, y: T): boolean {
   if (Object.is(x, y)) {
     return true;
   }
