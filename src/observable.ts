@@ -27,7 +27,7 @@ export class Observable<V> {
   private errorCache: Error | null = null;
   private completed = false;
 
-  private startObservation() {
+  private startObservation(): void {
     this.observe({
       next: (v: V) => {
         if (this.completed) {
@@ -53,7 +53,10 @@ export class Observable<V> {
    */
   public constructor(private readonly observe: (subscriber: Subscriber<V>) => void) {}
 
-  public subscribe = (observer: {next: (v: V) => void; error?: (err: any) => void; complete?: () => void}) => {
+  /**
+   * @returns unsubscribe
+   */
+  public subscribe = (observer: {next: (v: V) => void; error?: (err: any) => void; complete?: () => void}): VoidFunction => {
     const innerUpdateSub = () => {
       observer.next(this.stateCache!);
     };

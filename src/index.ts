@@ -9,7 +9,7 @@ export {Observable, Subscribable, Middleware};
 type Updater<State> = (prev: State) => State;
 type Setter<State> = Updater<State> | ((updater: Updater<State>) => void);
 
-type BehaviorReturn<State> = ((s: State) => State) | ((s: State) => Promise<State>) | ((s: State) => Observable<(current: State) => State>);
+type BehaviorReturn<State> = (s: State) => State | Promise<State> | Observable<(current: State) => State>;
 type Behavior<State, Args extends ReadonlyArray<any>> = (...args: Args) => BehaviorReturn<State>;
 
 export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly<State>, any>>> = {
@@ -17,7 +17,7 @@ export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly
   useSelector: <Selection>(selector: (s: Readonly<State>) => Selection, isEqual?: (a: Selection, b: Selection) => boolean) => Selection;
   getState(): Readonly<State>;
   setState: Setter<Readonly<State>>;
-  actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => void};
+  actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => ReturnType<BehaviorReturn<State>>};
 };
 
 export function createStore<State, Behaviors extends Record<string, Behavior<State, any>>>(
@@ -51,11 +51,11 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
           throw new TypeError(`method ${name.toString()} is not defined in store`);
         }
         const method: (...a: ReadonlyArray<any>) => BehaviorReturn<State> = target[name as string] as any;
-        return (...args: ReadonlyArray<any>) => {
+        return (...args: ReadonlyArray<any>): ReturnType<BehaviorReturn<State>> => {
           const updater = method(...args);
           const nextState = updater(sub.getState());
           if (nextState instanceof Promise) {
-            void nextState.then((s) => sub.update(s));
+            return nextState.then((s) => sub.update(s));
           } else if (nextState instanceof Observable) {
             const unsub = nextState.subscribe({
               next: (updater) => {
@@ -65,13 +65,13 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
               // error: (err) => {????}
               complete: () => unsub(),
             });
+            return nextState;
           } else {
-            sub.update(nextState);
+            return sub.update(nextState);
           }
-          return nextState;
         };
       },
-    }),
+    }) as any, // it's hard to apply decent typing for Proxy...
 
     getState: sub.getState,
     setState,
