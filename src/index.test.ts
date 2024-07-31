@@ -45,6 +45,34 @@ describe('Store', () => {
     });
   });
 
+  test('can handle multiple return type of behavior', async () => {
+    const initialState = {forNormal: 'n/a', forPromise: 'n/a', forObservable: 'n/a'};
+    const store = createStore(initialState, {
+      handleFlexible: (type: 'normal' | 'promise' | 'observable', value: string) => (prev) => {
+        switch (type) {
+          case 'normal':
+            return {...prev, forNormal: value};
+          case 'promise':
+            return sleep(1).then(() => ({...prev, forPromise: value}));
+          case 'observable':
+            return new Observable((obs) => setTimeout(() => obs.next((p) => ({...p, forObservable: value})), 1));
+        }
+      },
+    });
+
+    store.actions.handleFlexible('normal', 'change1');
+    expect(store.getState().forNormal).toEqual('change1');
+
+    await store.actions.handleFlexible('promise', 'change2');
+    expect(store.getState().forPromise).toEqual('change2');
+
+    await new Promise<void>((done) => {
+      const obs = store.actions.handleFlexible('observable', 'change3') as any as Observable<typeof initialState>;
+      obs.subscribe({next: () => done()});
+    });
+    expect(store.getState().forObservable).toEqual('change3');
+  });
+
   test('is subscribable with observable method', async () => {
     const initialState = {a: 'a', b: 'b'};
     type TestState = typeof initialState;
