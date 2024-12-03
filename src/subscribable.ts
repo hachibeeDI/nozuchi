@@ -1,4 +1,4 @@
-const CACHED_UPDATE_EVENT = new Event('update');
+const UPDATE_EVENT = 'update';
 
 export type Middleware<State> = {
   onInit?: (s: State) => State;
@@ -36,7 +36,7 @@ export class Subscribable<State> {
   public update = (newState: State): State => {
     const newState_ = this.eventHook?.onUpdate?.call(null, newState, this.state) ?? newState;
     this.state = newState_;
-    this.evt.dispatchEvent(CACHED_UPDATE_EVENT);
+    this.evt.dispatchEvent(new Event(UPDATE_EVENT));
     return this.state;
   };
 }

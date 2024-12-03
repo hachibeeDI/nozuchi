@@ -17,6 +17,10 @@ export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly
   useSelector: <Selection>(selector: (s: Readonly<State>) => Selection, isEqual?: (a: Selection, b: Selection) => boolean) => Selection;
   getState(): Readonly<State>;
   setState: Setter<Readonly<State>>;
+  /**
+   * [actions] will change a state of Store.
+   * Store is able to handle plain object, Promise<T> and also Observable<T>
+   */
   actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => ReturnType<BehaviorReturn<State>>};
 };
 
