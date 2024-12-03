@@ -1,4 +1,4 @@
-import {describe, test, expect, vi} from 'vitest';
+import {describe, test, expect, vi, assertType} from 'vitest';
 
 import {createStore} from './index';
 import {shallowCompare} from './helpers';
@@ -19,7 +19,9 @@ describe('Store', () => {
 
     store.subscribe(confirmAWasChanged);
 
-    store.actions.handleAChanged('newA');
+    const result = store.actions.handleAChanged('newA');
+    assertType<typeof initialState>(result);
+    expect(result).toStrictEqual({a: 'newA', b: 'b'});
 
     expect(confirmAWasChanged).toBeCalledTimes(1);
   });
@@ -41,7 +43,8 @@ describe('Store', () => {
 
       store.subscribe(confirmAWasChanged);
 
-      store.actions.handleAChangedAsync('newA async');
+      const result = store.actions.handleAChangedAsync('newA async');
+      assertType<Promise<typeof initialState>>(result);
     });
   });
 
