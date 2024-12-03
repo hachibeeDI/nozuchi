@@ -21,7 +21,7 @@ export type Subscriber<State, Behaviors extends Record<string, Behavior<Readonly
    * [actions] will change a state of Store.
    * Store is able to handle plain object, Promise<T> and also Observable<T>
    */
-  actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => ReturnType<BehaviorReturn<State>>};
+  actions: {[P in keyof Behaviors]: (...args: Parameters<Behaviors[P]>) => ReturnType<ReturnType<Behaviors[P]>>};
 };
 
 export function createStore<State, Behaviors extends Record<string, Behavior<State, any>>>(
