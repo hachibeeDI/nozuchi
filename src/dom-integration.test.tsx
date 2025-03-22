@@ -2,7 +2,7 @@ import {screen} from '@testing-library/dom';
 import {render} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import React from 'react';
+import React, { act } from 'react';
 
 import {test, expect} from 'vitest';
 
@@ -37,16 +37,20 @@ test('Selector was memoized', async () => {
     );
   };
 
-  render(<Top />);
+  await render(<Top />);
 
-  await userEvent.click(screen.getByRole('button'));
+  await act(async () => {
+    await userEvent.click(screen.getByRole('button'));
+  })
 
   expect(aCalled).toBe(2);
   expect(bCalled).toBe(1);
 
   expect(screen.getByTestId('a').textContent).toBe('count = 1');
 
-  await userEvent.click(screen.getByRole('button'));
+  await act(async () => {
+    await userEvent.click(screen.getByRole('button'));
+  });
 
   expect(aCalled).toBe(3);
   expect(bCalled).toBe(1);
