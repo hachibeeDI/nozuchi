@@ -19,8 +19,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Cache node_modules
-      id: cache
+    - name: Cache yarn packages
       uses: actions/cache@v4
       with:
         path: ~/.cache/yarn
@@ -29,7 +28,6 @@ jobs:
           ${{ runner.os }}-yarn-
 
     - name: Install node_modules
-      if: steps.cache.outputs.cache-hit != 'true'
       run: yarn install
 
     - name: Lint and Test
