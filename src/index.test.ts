@@ -2,7 +2,7 @@ import {describe, test, expect, vi, assertType} from 'vitest';
 
 import {createStore} from './index';
 import {shallowCompare, isPrimitive} from './helpers';
-import {Observable} from './observable';
+import {Observable, symbolObservable} from './observable';
 
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time)); //timeはミリ秒
 
@@ -166,7 +166,8 @@ describe('Observable', () => {
       sub.next(1);
     });
 
-    expect(obs[Symbol.observable]()).toBe(obs);
+    const interop = obs as unknown as Record<symbol, () => typeof obs>;
+    expect(interop[symbolObservable]()).toBe(obs);
   });
 });
 
