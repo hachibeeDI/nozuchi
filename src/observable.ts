@@ -1,3 +1,9 @@
+declare global {
+  interface SymbolConstructor {
+    readonly observable: symbol;
+  }
+}
+
 const UPDATE_EVENT_TYPE = 'update' as const;
 const ERROR_EVENT_TYPE = 'error' as const;
 const COMPLETE_EVENT_TYPE = 'complete' as const;
@@ -52,6 +58,14 @@ export class Observable<V> {
    * @param observe observe won't be called until [subscribe] called
    */
   public constructor(private readonly observe: (subscriber: Subscriber<V>) => void) {}
+
+  /**
+   * Implements the Observable interop protocol (Symbol.observable).
+   * Allows this Observable to be consumed by RxJS and other compatible libraries.
+   */
+  public [Symbol.observable](): this {
+    return this;
+  }
 
   /**
    * @returns unsubscribe

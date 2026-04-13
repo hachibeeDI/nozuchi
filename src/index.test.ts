@@ -160,6 +160,16 @@ describe('isPrimitive', () => {
   });
 });
 
+describe('Observable', () => {
+  test('implements Symbol.observable — returns itself for interoperability', () => {
+    const obs = new Observable<number>((sub) => {
+      sub.next(1);
+    });
+
+    expect(obs[Symbol.observable]()).toBe(obs);
+  });
+});
+
 describe('shallowCompare', () => {
   test('shallowCompare works fine', () => {
     expect(shallowCompare('abc', 'abc')).toBe(true);
