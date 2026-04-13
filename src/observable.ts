@@ -2,10 +2,17 @@ const UPDATE_EVENT_TYPE = 'update' as const;
 const ERROR_EVENT_TYPE = 'error' as const;
 const COMPLETE_EVENT_TYPE = 'complete' as const;
 
-// Yes, Event can't be cached.
-// const CACHED_UPDATE_EVENT = new Event(UPDATE_EVENT_TYPE);
-// const CACHED_ERROR_EVENT = new Event(ERROR_EVENT_TYPE);
-// const CACHED_COMPLETE_EVENT = new Event(COMPLETE_EVENT_TYPE);
+/**
+ * The resolved Symbol.observable value, with a fallback for environments that don't support it.
+ * Exported so users can reference it directly (e.g. for their own type augmentation).
+ *
+ * To enable TypeScript type checking on the interop protocol, add this to your project:
+ * @example
+ * declare global {
+ *   interface SymbolConstructor { readonly observable: symbol; }
+ * }
+ */
+export const symbolObservable: symbol = (Symbol as {observable?: symbol}).observable ?? Symbol('observable');
 
 export class ObservableCompletedError extends Error {}
 
@@ -20,9 +27,6 @@ type Subscriber<V> = {
  */
 export class Observable<V> {
   private readonly evt = new EventTarget();
-  /**
-   * TODO: should be array?
-   */
   private stateCache: V | null = null;
   private errorCache: Error | null = null;
   private completed = false;
@@ -95,3 +99,16 @@ export class Observable<V> {
     return unsubscribe;
   };
 }
+
+/**
+ * Implements the Observable interop protocol (Symbol.observable).
+ * Using Object.defineProperty because TypeScript's computed property syntax
+ * requires a unique symbol, but symbolObservable is typed as symbol.
+ */
+Object.defineProperty(Observable.prototype, symbolObservable, {
+  value<V>(this: Observable<V>): Observable<V> {
+    return this;
+  },
+  writable: true,
+  configurable: true,
+});
