@@ -2,7 +2,7 @@ import {screen} from '@testing-library/dom';
 import {render} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import React, { act } from 'react';
+import React, {act} from 'react';
 
 import {test, expect} from 'vitest';
 
@@ -32,7 +32,7 @@ test('Selector was memoized', async () => {
       <div>
         <ARefComponent />
         <BRefComponent />
-        <button onClick={() => store.actions.handleAClicked()} />
+        <button type="button" onClick={() => store.actions.handleAClicked()} />
       </div>
     );
   };
@@ -41,7 +41,7 @@ test('Selector was memoized', async () => {
 
   await act(async () => {
     await userEvent.click(screen.getByRole('button'));
-  })
+  });
 
   expect(aCalled).toBe(2);
   expect(bCalled).toBe(1);
