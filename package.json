@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "test": "vitest run",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "check:lint": "biome lint src/ --vcs-use-ignore-file=true",
     "check:style": "biome format src/ --vcs-use-ignore-file=true",
     "check:type": "npm run build --noEmit",
