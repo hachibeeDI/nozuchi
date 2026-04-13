@@ -1,7 +1,7 @@
 import {describe, test, expect, vi, assertType} from 'vitest';
 
 import {createStore} from './index';
-import {shallowCompare} from './helpers';
+import {shallowCompare, isPrimitive} from './helpers';
 import {Observable} from './observable';
 
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time)); //timeはミリ秒
@@ -139,6 +139,24 @@ describe('Store', () => {
 
     store.actions.handleChange('newA', 'newB');
     expect(store.getState()).toStrictEqual({a: 'a!!!->newA', b: 'b!->newB'});
+  });
+});
+
+describe('isPrimitive', () => {
+  test('returns true for all JS primitive types', () => {
+    expect(isPrimitive('hello')).toBe(true);
+    expect(isPrimitive(42)).toBe(true);
+    expect(isPrimitive(true)).toBe(true);
+    expect(isPrimitive(undefined)).toBe(true);
+    expect(isPrimitive(Symbol('s'))).toBe(true);
+    expect(isPrimitive(42n)).toBe(true);
+  });
+
+  test('returns false for non-primitive types', () => {
+    expect(isPrimitive(null)).toBe(false);
+    expect(isPrimitive({})).toBe(false);
+    expect(isPrimitive([])).toBe(false);
+    expect(isPrimitive(() => {})).toBe(false);
   });
 });
 

@@ -5,11 +5,10 @@ function shallowCompareArray<T>(x: ReadonlyArray<T>, y: ReadonlyArray<T>): boole
   return [...Array(x.length).keys()].every((i) => x[i] === y[i]);
 }
 
-// string or number of boolean
-const primitiveHead = new RegExp('^[s|n|b]');
-
-function isPrimitive(x: unknown): boolean {
-  return primitiveHead.test(typeof x);
+/** export for test suite */
+export function isPrimitive(x: unknown): boolean {
+  const t = typeof x;
+  return t !== 'object' && t !== 'function';
 }
 
 /** export for test suite */
