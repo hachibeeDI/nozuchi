@@ -17,7 +17,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: '22.x'
+        node-version: '24.x'
         registry-url: 'https://registry.npmjs.org'
 
     - name: Cache yarn packages
@@ -32,4 +32,4 @@ jobs:
       run: yarn install
 
     - name: Publish
-      run: npm publish --provenance
+      run: yarn publish --provenance
