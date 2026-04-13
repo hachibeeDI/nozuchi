@@ -18,7 +18,7 @@ export class ObservableCompletedError extends Error {}
 
 type Subscriber<V> = {
   next: (v: V) => void;
-  error: (err: any) => void;
+  error: (err: unknown) => void;
   complete: () => void;
 };
 
@@ -28,25 +28,27 @@ type Subscriber<V> = {
 export class Observable<V> {
   private readonly evt = new EventTarget();
   private stateCache: V | null = null;
-  private errorCache: Error | null = null;
+  private errorCache: unknown = null;
   private completed = false;
+  private started = false;
 
   private startObservation(): void {
     this.observe({
       next: (v: V) => {
         if (this.completed) {
-          throw new ObservableCompletedError('This Observable has been completed.');
+          return;
         }
         this.stateCache = v;
         this.evt.dispatchEvent(new Event(UPDATE_EVENT_TYPE));
       },
 
-      error: (err: any) => {
+      error: (err: unknown) => {
         this.errorCache = err;
         this.evt.dispatchEvent(new Event(ERROR_EVENT_TYPE));
       },
 
       complete: () => {
+        this.completed = true;
         this.evt.dispatchEvent(new Event(COMPLETE_EVENT_TYPE));
       },
     });
@@ -60,41 +62,33 @@ export class Observable<V> {
   /**
    * @returns unsubscribe
    */
-  public subscribe = (observer: {next: (v: V) => void; error?: (err: any) => void; complete?: () => void}): VoidFunction => {
+  public subscribe = (observer: {next: (v: V) => void; error?: (err: unknown) => void; complete?: () => void}): VoidFunction => {
     const innerUpdateSub = () => {
       observer.next(this.stateCache!);
     };
     this.evt.addEventListener(UPDATE_EVENT_TYPE, innerUpdateSub);
 
     const innerErrorSub = () => {
-      if (observer.error) {
-        observer.error(this.errorCache);
-      }
+      observer.error?.(this.errorCache);
     };
     this.evt.addEventListener(ERROR_EVENT_TYPE, innerErrorSub);
 
+    const innerCompleteSub = () => {
+      unsubscribe();
+      observer.complete?.();
+    };
+    this.evt.addEventListener(COMPLETE_EVENT_TYPE, innerCompleteSub);
+
     const unsubscribe = () => {
       this.evt.removeEventListener(UPDATE_EVENT_TYPE, innerUpdateSub);
-
-      if (observer.error) {
-        this.evt.removeEventListener(ERROR_EVENT_TYPE, innerErrorSub);
-      }
-      if (observer.complete) {
-        this.evt.removeEventListener(COMPLETE_EVENT_TYPE, observer.complete);
-      }
-      this.completed = true;
+      this.evt.removeEventListener(ERROR_EVENT_TYPE, innerErrorSub);
+      this.evt.removeEventListener(COMPLETE_EVENT_TYPE, innerCompleteSub);
     };
 
-    if (observer.complete) {
-      this.evt.addEventListener(COMPLETE_EVENT_TYPE, observer.complete);
+    if (!this.started) {
+      this.started = true;
+      this.startObservation();
     }
-    const innerCompletedSub = () => {
-      unsubscribe();
-    };
-    this.evt.addEventListener(COMPLETE_EVENT_TYPE, innerCompletedSub);
-
-    // lazy
-    this.startObservation();
 
     return unsubscribe;
   };
