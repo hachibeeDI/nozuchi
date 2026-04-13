@@ -65,8 +65,9 @@ export function createStore<State, Behaviors extends Record<string, Behavior<Sta
               next: (updater) => {
                 sub.update(updater(sub.getState()));
               },
-              // TODO: hmm... should handle error?
-              // error: (err) => {????}
+              error: (err) => {
+                throw err instanceof Error ? err : new Error(String(err));
+              },
               complete: () => unsub(),
             });
             return nextState;

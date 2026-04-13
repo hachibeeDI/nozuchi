@@ -169,6 +169,106 @@ describe('Observable', () => {
     const interop = obs as unknown as Record<symbol, () => typeof obs>;
     expect(interop[symbolObservable]()).toBe(obs);
   });
+
+  test('producer runs only once even with multiple subscribers', async () => {
+    let producerCallCount = 0;
+    const obs = new Observable<number>(async (sub) => {
+      producerCallCount++;
+      await sleep(1);
+      sub.next(1);
+      await sleep(1);
+      sub.next(2);
+      sub.complete();
+    });
+
+    const received1: number[] = [];
+    const received2: number[] = [];
+
+    obs.subscribe({next: (v) => received1.push(v)});
+    obs.subscribe({next: (v) => received2.push(v)});
+
+    await sleep(20);
+
+    expect(producerCallCount).toBe(1);
+    expect(received1).toEqual([1, 2]);
+    expect(received2).toEqual([1, 2]);
+  });
+
+  test('unsubscribing one subscriber does not affect others', async () => {
+    const obs = new Observable<number>(async (sub) => {
+      await sleep(5);
+      sub.next(1);
+      await sleep(20);
+      sub.next(2);
+    });
+
+    const received1: number[] = [];
+    const received2: number[] = [];
+
+    const unsub1 = obs.subscribe({next: (v) => received1.push(v)});
+    obs.subscribe({next: (v) => received2.push(v)});
+
+    await sleep(10); // after first emission (5ms), before second (25ms)
+    unsub1();
+    await sleep(25); // wait for second emission
+
+    expect(received1).toEqual([1]);
+    expect(received2).toEqual([1, 2]);
+  });
+
+  test('next after complete is silently ignored, not thrown', () => {
+    let caughtError: unknown;
+    const obs = new Observable<number>((sub) => {
+      sub.next(1);
+      sub.complete();
+      try {
+        sub.next(2);
+      } catch (e) {
+        caughtError = e;
+      }
+    });
+
+    const received: number[] = [];
+    obs.subscribe({next: (v) => received.push(v)});
+
+    expect(caughtError).toBeUndefined();
+    expect(received).toEqual([1]);
+  });
+
+  test('complete callback fires exactly once', async () => {
+    const obs = new Observable<number>(async (sub) => {
+      await sleep(1);
+      sub.next(1);
+      sub.complete();
+    });
+
+    const onComplete = vi.fn();
+    obs.subscribe({next: () => {}, complete: onComplete});
+    obs.subscribe({next: () => {}, complete: onComplete});
+
+    await sleep(10);
+
+    expect(onComplete).toBeCalledTimes(2);
+  });
+
+  test('Observable error in store action is not silently swallowed', async () => {
+    const initialState = {value: 'initial'};
+    const store = createStore(initialState, {
+      doFetch: () => (_prev) =>
+        new Observable<(s: typeof initialState) => typeof initialState>((sub) => {
+          setTimeout(() => sub.error(new Error('network error')), 1);
+        }),
+    });
+
+    const errorReceived = await new Promise<Error | null>((resolve) => {
+      process.on('uncaughtException', (err) => resolve(err));
+      store.actions.doFetch();
+      setTimeout(() => resolve(null), 20);
+    });
+
+    expect(errorReceived).toBeInstanceOf(Error);
+    expect((errorReceived as Error).message).toBe('network error');
+  });
 });
 
 describe('shallowCompare', () => {
