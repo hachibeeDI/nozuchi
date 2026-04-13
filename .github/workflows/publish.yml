@@ -20,16 +20,8 @@ jobs:
         node-version: '24.x'
         registry-url: 'https://registry.npmjs.org'
 
-    - name: Cache yarn packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/yarn
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
-
     - name: Install dependencies
-      run: yarn install
+      run: npm ci
 
     - name: Publish
-      run: yarn publish --provenance
+      run: npm publish --provenance
